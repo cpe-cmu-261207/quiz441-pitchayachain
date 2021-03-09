@@ -2,7 +2,7 @@ import express from 'express'
 import bodyParser from 'body-parser'
 import cors from 'cors'
 import bcrypt from 'bcrypt'
-import jwt from 'jsonwebtoken'
+import jwt, { TokenExpiredError } from 'jsonwebtoken'
 import { body, query, validationResult } from 'express-validator'
 
 const app = express()
@@ -22,16 +22,31 @@ app.post('/login',
 
     const { username, password } = req.body
     // Use username and password to create token.
-
-    return res.status(200).json({
-      message: 'Login succesfully',
+    if({ username, password}){
+     return res.status(200).json({
+      "message": 'Login succesfully',
+      "token": cors
     })
+  }else if(!{ username, password}){
+     return res.status(400).json({
+      "message": "Invalid username or password"
+      })
+  }
   })
 
 app.post('/register',
   (req, res) => {
-
     const { username, password, firstname, lastname, balance } = req.body
+    if({ username, password, firstname, lastname, balance }){
+       res.status(200).json({
+        "message": "Register successfully"
+      })
+    }else if(!{ username, password, firstname, lastname, balance }){
+       res.status(400).json({
+        "message": "Username is already in used"
+      })
+    }
+
   })
 
 app.get('/balance',
@@ -39,10 +54,16 @@ app.get('/balance',
     const token = req.query.token as string
     try {
       const { username } = jwt.verify(token, SECRET) as JWTPayload
-  
+       res.status(200).json({
+          "name": "Peter Parker",
+          "balance": 100
+      })
     }
     catch (e) {
       //response in case of invalid token
+      res.status(401).json({
+       "message": "Invalid token"
+    })
     }
   })
 
@@ -52,7 +73,7 @@ app.post('/deposit',
 
     //Is amount <= 0 ?
     if (!validationResult(req).isEmpty())
-      return res.status(400).json({ message: "Invalid data" })
+       res.status(400).json({ message: "Invalid data" })
   })
 
 app.post('/withdraw',
@@ -61,19 +82,24 @@ app.post('/withdraw',
 
 app.delete('/reset', (req, res) => {
 
-  //code your database reset here
+//  delete cors
   
-  return res.status(200).json({
+   res.status(200).json({
     message: 'Reset database successfully'
   })
 })
 
 app.get('/me', (req, res) => {
-  
+  res.send({
+  "firstname": "pitchaya",
+  "lastname": "raihuay",
+  "code": 620612159,
+  "gpa": 4.00
+  })
 })
 
 app.get('/demo', (req, res) => {
-  return res.status(200).json({
+    res.status(200).json({
     message: 'This message is returned from demo route.'
   })
 })
